@@ -280,16 +280,21 @@ void main_full( void )
 	LOGGER
 */
 
-#define mainLOG_TASK_DELAY pdMS_TO_TICKS(10000UL)
+#define mainLOG_TASK_DELAY pdMS_TO_TICKS(12000UL)
 
 static void prvLogStats( void *pvParameters)
 {
-	vTaskDelay(mainLOG_TASK_DELAY);
 	char* pcBuffer = pvPortMalloc(4000);
-	if (pcBuffer != NULL) {
-		vTaskGetRunTimeStats(pcBuffer);
-		printf("%s\n",pcBuffer);
-		vPortFree(pcBuffer);
+	if (pcBuffer != NULL)
+	{
+		while(1)
+		{
+			vTaskDelay(mainLOG_TASK_DELAY);
+			if (pcBuffer != NULL) {
+				vTaskGetRunTimeStats(pcBuffer);
+				printf("%s\n",pcBuffer);
+			}
+		}
 	}
 }
 
