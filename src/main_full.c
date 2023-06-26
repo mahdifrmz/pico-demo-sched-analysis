@@ -96,6 +96,7 @@
 #include "EventGroupsDemo.h"
 #include "IntSemTest.h"
 #include "TaskNotify.h"
+#include "StatTimer.h"
 
 #include "main.h"
 
@@ -137,6 +138,9 @@ purpose of ensuring parameters are passed into tasks correctly. */
 /* The base period used by the timer test tasks. */
 #define mainTIMER_TEST_PERIOD				( 50 )
 
+/* Log task frequency*/
+#define mainLOG_TASK_DELAY pdMS_TO_TICKS(12000UL)
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -173,6 +177,7 @@ volatile unsigned long ulRegTest1LoopCounter = 0UL, ulRegTest2LoopCounter = 0UL;
 /*-----------------------------------------------------------*/
 
 static void prvLogStats( void *pvParameters);
+static void prvStartLogTask( void );
 
 void main_full( void )
 {
@@ -250,8 +255,8 @@ void main_full( void )
 	xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* Log task */
-	xTaskCreate( prvLogStats, "Log", configMINIMAL_STACK_SIZE, NULL, mainLOG_TASK_PRIORITY, NULL );
-	
+	prvStartLogTask();
+
 	/* The set of tasks created by the following function call have to be
 	created last as they keep account of the number of tasks they expect to see
 	running. */
@@ -280,7 +285,11 @@ void main_full( void )
 	LOGGER
 */
 
-#define mainLOG_TASK_DELAY pdMS_TO_TICKS(12000UL)
+static void prvStartLogTask( void )
+{
+	vInitialiseStatTimer();
+	xTaskCreate( prvLogStats, "Log", configMINIMAL_STACK_SIZE, NULL, mainLOG_TASK_PRIORITY, NULL );
+}
 
 static void prvLogStats( void *pvParameters)
 {

@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME}
     src/semtest.c
     src/BlockQ.c
     src/flop.c
+    src/StatTimer.c
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

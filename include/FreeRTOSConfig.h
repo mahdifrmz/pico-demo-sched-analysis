@@ -138,8 +138,12 @@ to exclude the API function. */
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
 #define configSUPPORT_DYNAMIC_ALLOCATION 1
 #define configUSE_TRACE_FACILITY 1
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() ;
-#define portGET_RUN_TIME_COUNTER_VALUE() xTaskGetTickCount()
+
+uint32_t ulGetStatTimer( void );
+void vConfigureStatTimer( void );
+
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() vConfigureStatTimer()
+#define portGET_RUN_TIME_COUNTER_VALUE() ulGetStatTimer()
 
 /* A header file that defines trace macro can be included here. */
 

@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "intqueuetimer.h": "c",
+        "stattimer.h": "c"
     }
 }
