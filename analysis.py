@@ -196,4 +196,4 @@ print('\nScheduling Result:')
 showSchdAnalysis(stats)
 
 util = analysisUtilization(stats)
-print('\nCPU Utilization:',util)
+print('\nCPU Utilization: {}%'.format(util))
