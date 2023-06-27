@@ -139,7 +139,7 @@ purpose of ensuring parameters are passed into tasks correctly. */
 #define mainTIMER_TEST_PERIOD				( 50 )
 
 /* Log task frequency*/
-#define mainLOG_TASK_DELAY_MS (12000UL)
+#define mainLOG_TASK_DELAY_MS (6000UL)
 #define mainLOG_TASK_DELAY pdMS_TO_TICKS(mainLOG_TASK_DELAY_MS)
 #define mainLOG_STAT_BUFFER_SIZE (4000)
 

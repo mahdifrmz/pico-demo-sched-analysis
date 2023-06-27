@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 import os
 import time
-import subprocess
 import serial
+from tabulate import tabulate
 
 # paths
 PICO_MOUNT_POINT = '/media/mahdif/RPI-RP2/' # TODO: hardcoded
@@ -11,8 +11,8 @@ BUILD_DIR = './build' # TODO: hardcoded
 SERIAL_PORT_NAME = '/dev/ttyACM0'
 SERIAL_PORT_BAUDRATE = 115200
 # commmunication
-INTERVAL_COUNT = 1
-INTERVAL_SEC = 12
+INTERVAL_COUNT = 3
+INTERVAL_SEC = 6
 TIMEOUT_SEC = 0.5
 STAT_SIZE = 4000
 # connection
@@ -23,7 +23,6 @@ JOB_COUNT = os.cpu_count()
 BUILD_COMMAND = 'cmake --build {} --parallel {}'.format(BUILD_DIR,JOB_COUNT)
 LOAD_COMMAND = 'cp {} {}'.format(BUILD_UF2,PICO_MOUNT_POINT) # TODO: UNIX-specific
 # analysis
-X = 0
 SCHD_NONSTOP = -1
 SCHD_APERIODIC = -2
 
@@ -32,7 +31,7 @@ def secs(x:int):
 def millis(x:int):
     return x * 1000
 
-PERIODS = {
+TASKS = {
     # Log
     'Log': (secs(12),31),
     # Check
@@ -91,7 +90,7 @@ PERIODS = {
     
     # OS
     'IDLE': (SCHD_NONSTOP,0),
-    'TmrSvc': (SCHD_APERIODIC,0),
+    'TmrSvc': (SCHD_APERIODIC,31),
 }
 
 
@@ -149,11 +148,52 @@ def parseInput(input:str) -> str:
     input = list(map(lambda s : [s[0],int(s[1])*100],input))
     return input
 
+def formatStat(stat):
+    [name,execTime] = stat
+    (period,priority) = TASKS[name]
+    totalTime = INTERVAL_COUNT * secs(INTERVAL_SEC)
+    periodCount = totalTime / period
+    execTime /= periodCount
+    return [name,int(execTime),period,priority]
+
+def isPeriodic(stat):
+    t = TASKS[stat[0]][0]
+    return t != SCHD_NONSTOP and t != SCHD_APERIODIC
+
+def showSchdAnalysis(stats:list):
+    stats.insert(0,['Name','Exec Time','Period','Priority'])
+    print(tabulate(stats,headers='firstrow'))
+    stats.pop(0)
+
+def showRuntimeStats(stats:list):
+    stats.insert(0,['Name','Exec Time'])
+    print(tabulate(stats,headers='firstrow'))
+    stats.pop(0)
+
+def analysisParameters(stats:list) -> list:
+    stats = list(filter(lambda s : isPeriodic(s),stats))
+    stats = list(map(lambda s : formatStat(s),stats))
+    return stats
+
+def analysisUtilization(stats:list) -> list:
+    sum = 0
+    for [_,execTime,period,_] in stats:
+        sum += execTime/period
+    return sum * 100
+
 checkRoot()
 projectBuild()
 projectLoad()
 con = connectSerialPort()
-input = readInput(con)
-input = parseInput(input)
-for name in input:
-    print(name)
+stats = readInput(con)
+stats = parseInput(stats)
+
+print('\nRuntime Stats:')
+showRuntimeStats(stats)
+
+stats = analysisParameters(stats)
+print('\nScheduling Result:')
+showSchdAnalysis(stats)
+
+util = analysisUtilization(stats)
+print('\nCPU Utilization:',util)
