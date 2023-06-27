@@ -139,7 +139,9 @@ purpose of ensuring parameters are passed into tasks correctly. */
 #define mainTIMER_TEST_PERIOD				( 50 )
 
 /* Log task frequency*/
-#define mainLOG_TASK_DELAY pdMS_TO_TICKS(12000UL)
+#define mainLOG_TASK_DELAY_MS (12000UL)
+#define mainLOG_TASK_DELAY pdMS_TO_TICKS(mainLOG_TASK_DELAY_MS)
+#define mainLOG_STAT_BUFFER_SIZE (4000)
 
 /*-----------------------------------------------------------*/
 
@@ -281,10 +283,7 @@ void main_full( void )
 /*-----------------------------------------------------------*/
 
 
-/*
-	LOGGER
-*/
-
+/* LOGGER */
 static void prvStartLogTask( void )
 {
 	vInitialiseStatTimer();
@@ -293,15 +292,15 @@ static void prvStartLogTask( void )
 
 static void prvLogStats( void *pvParameters)
 {
-	char* pcBuffer = pvPortMalloc(4000);
+	char* pcBuffer = pvPortMalloc(mainLOG_STAT_BUFFER_SIZE);
 	if (pcBuffer != NULL)
 	{
-		while(1)
+		for(int i=0;;i++)
 		{
 			vTaskDelay(mainLOG_TASK_DELAY);
 			if (pcBuffer != NULL) {
 				vTaskGetRunTimeStats(pcBuffer);
-				printf("%s\n",pcBuffer);
+				printf("Runtime Stats\nRecords ID: %d\nTime Elapsed: %lu ms\n\n%s\n",i+1,(i+1)*mainLOG_TASK_DELAY_MS,pcBuffer);
 			}
 		}
 	}
