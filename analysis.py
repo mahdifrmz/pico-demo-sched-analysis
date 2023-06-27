@@ -24,7 +24,7 @@ BUILD_COMMAND = 'cmake --build {} --parallel {}'.format(BUILD_DIR,JOB_COUNT)
 LOAD_COMMAND = 'cp {} {}'.format(BUILD_UF2,PICO_MOUNT_POINT) # TODO: UNIX-specific
 # analysis
 X = 0
-SCHD_IDLE = -1
+SCHD_NONSTOP = -1
 SCHD_APERIODIC = -2
 
 def secs(x:int):
@@ -33,49 +33,65 @@ def millis(x:int):
     return x * 1000
 
 PERIODS = {
-    'Log': secs(12),
-    'Check': secs(3),
-    'CREATOR': secs(1),
-    'H1QTx': SCHD_IDLE,
-    'H2QTx': SCHD_IDLE,
-    'H1QRx': SCHD_IDLE,
-    'H2QRx': SCHD_IDLE,
-    'L1QRx': SCHD_IDLE,
-    'L2QRx': SCHD_IDLE,
-    'QConsB1': SCHD_IDLE,
-    'QProdB2': SCHD_IDLE,
-    'QConsB3': SCHD_IDLE,
-    'QProdB4': SCHD_IDLE,
-    'QProdB5': SCHD_IDLE,
-    'QConsB6': SCHD_IDLE,
-    'CNT1': SCHD_IDLE,
-    'CNT2': SCHD_IDLE,
-    'Math1': SCHD_IDLE,
-    'Math2': SCHD_IDLE,
-    'Math3': SCHD_IDLE,
-    'Math4': SCHD_IDLE,
-    'MuLow': SCHD_IDLE,
-    'MuMed': SCHD_IDLE,
-    'MuHigh': SCHD_IDLE,
-    'MuHigh2': SCHD_IDLE,
-    'Reg1': SCHD_IDLE,
-    'Reg2': SCHD_IDLE,
-    'PolSEM1': SCHD_IDLE,
-    'PolSEM2': SCHD_IDLE,
-    'BlkSEM1': SCHD_IDLE,
-    'BlkSEM2': SCHD_IDLE,
-    'Rec1': SCHD_IDLE,
-    'Rec2': SCHD_IDLE,
-    'Rec3': SCHD_IDLE,
-    'IntCnt': SCHD_IDLE,
-    'IntMuS': SCHD_IDLE,
-    'IntMuM': SCHD_IDLE,
-    'GenQ': SCHD_IDLE,
-    'QOver': SCHD_IDLE,
-    'Notified': SCHD_IDLE,
-    'TmrTst': SCHD_IDLE,
-    'IDLE': SCHD_IDLE,
-    'TmrSvc': SCHD_APERIODIC,
+    # Log
+    'Log': (secs(12),31),
+    # Check
+    'Check': (secs(3),31),
+    # Death
+    'CREATOR': (secs(1),3),
+    # Interrupt Queue
+    'H1QTx': (SCHD_NONSTOP,30),
+    'H2QTx': (SCHD_NONSTOP,30),
+    'H1QRx': (SCHD_NONSTOP,30),
+    'H2QRx': (SCHD_NONSTOP,30),
+    'L1QRx': (SCHD_NONSTOP,0),
+    'L2QRx': (SCHD_NONSTOP,0),
+    # Blocking Queue
+    'QConsB1': (SCHD_NONSTOP,2),
+    'QProdB2': (SCHD_NONSTOP,0),
+    'QConsB3': (SCHD_NONSTOP,0),
+    'QProdB4': (SCHD_NONSTOP,2),
+    'QProdB5': (SCHD_NONSTOP,0),
+    'QConsB6': (SCHD_NONSTOP,0),
+    # Counting Semaphores
+    'CNT1': (SCHD_NONSTOP,0),
+    'CNT2': (SCHD_NONSTOP,0),
+    # Math
+    'Math1': (SCHD_NONSTOP,0),
+    'Math2': (SCHD_NONSTOP,0),
+    'Math3': (SCHD_NONSTOP,0),
+    'Math4': (SCHD_NONSTOP,0),
+    # Generic Queue
+    'MuLow': (SCHD_NONSTOP,0),
+    'MuMed': (SCHD_NONSTOP,2),
+    'MuHigh': (SCHD_NONSTOP,3),
+    'MuHigh2': (SCHD_NONSTOP,2),
+    'GenQ': (SCHD_NONSTOP,0),
+    # Register Check
+    'Reg1': (SCHD_NONSTOP,0),
+    'Reg2': (SCHD_NONSTOP,0),
+    'PolSEM1': (SCHD_NONSTOP,0),
+    'PolSEM2': (SCHD_NONSTOP,0),
+    'BlkSEM1': (SCHD_NONSTOP,0),
+    'BlkSEM2': (SCHD_NONSTOP,0),
+    # Recursive Mutex
+    'Rec1': (SCHD_NONSTOP,2),
+    'Rec2': (SCHD_NONSTOP,1),
+    'Rec3': (SCHD_NONSTOP,0),
+    # Interrupt Semaphore
+    'IntCnt': (SCHD_NONSTOP,0),
+    'IntMuS': (SCHD_NONSTOP,1),
+    'IntMuM': (SCHD_NONSTOP,0),
+    # Task Notify
+    'Notified': (SCHD_NONSTOP,0),
+    # Queue Overwrite
+    'QOver': (SCHD_NONSTOP,0),
+    # Timer
+    'TmrTst': (SCHD_NONSTOP,30),
+    
+    # OS
+    'IDLE': (SCHD_NONSTOP,0),
+    'TmrSvc': (SCHD_APERIODIC,0),
 }
 
 

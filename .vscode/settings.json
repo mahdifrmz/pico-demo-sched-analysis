@@ -2,6 +2,7 @@
     "files.associations": {
         "freertos.h": "c",
         "intqueuetimer.h": "c",
-        "stattimer.h": "c"
+        "stattimer.h": "c",
+        "blockq.h": "c"
     }
 }
