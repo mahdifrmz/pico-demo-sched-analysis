@@ -48,11 +48,9 @@
 #if configNUM_CORES != 2 || configRUN_MULTIPLE_PRIORITIES == 0
 
 /* These tests assume that a higher priority task will block a lower priority tax from running */
-#define mainENABLE_BLOCK_TIME 1
 #define mainENABLE_BLOCKING_QUEUE 1
 #define mainENABLE_GENERIC_QUEUE 1
 #define mainENABLE_INTERRUPT_SEMAPHORE 1
-#define mainENABLE_EVENT_GROUP 1
 #define mainENABLE_RECURSIVE_MUTEX 1
 #define mainENABLE_TIMER_DEMO 1
 #endif
