@@ -2,26 +2,27 @@
 import os
 import time
 import serial
+import shutil
 from tabulate import tabulate
 
 # paths
 PICO_MOUNT_POINT = '/media/mahdif/RPI-RP2/' # TODO: hardcoded
 BUILD_DIR = './build' # TODO: hardcoded
+BIN_NAME = 'demo.uf2'
 # serial port
 SERIAL_PORT_NAME = '/dev/ttyACM0'
 SERIAL_PORT_BAUDRATE = 115200
 # commmunication
-INTERVAL_COUNT = 3
+INTERVAL_COUNT = 1
 INTERVAL_SEC = 6
 TIMEOUT_SEC = 0.5
 STAT_SIZE = 4000
 # connection
 CONNECTION_DELAY = 2
 # pipeline
-BUILD_UF2 = BUILD_DIR + '/demo.uf2' # TODO: UNIX-specific
+BUILD_UF2 = os.path.join(BUILD_DIR, BIN_NAME)
 JOB_COUNT = os.cpu_count()
 BUILD_COMMAND = 'cmake --build {} --parallel {}'.format(BUILD_DIR,JOB_COUNT)
-LOAD_COMMAND = 'cp {} {}'.format(BUILD_UF2,PICO_MOUNT_POINT) # TODO: UNIX-specific
 # analysis
 SCHD_NONSTOP = -1
 SCHD_APERIODIC = -2
@@ -110,7 +111,7 @@ def projectBuild():
     log('project built')
 
 def projectLoad():
-    assert(os.system(LOAD_COMMAND) == 0)
+    shutil.copyfile(BUILD_UF2,os.path.join(PICO_MOUNT_POINT, BIN_NAME))
     log('project loaded')
 
 def connectSerialPort() -> serial.Serial:
