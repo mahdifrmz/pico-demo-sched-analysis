@@ -1,28 +1,22 @@
 #!/usr/bin/python3
 import os
+import sys
 import time
 import serial
 import shutil
 from tabulate import tabulate
 
 # paths
-PICO_MOUNT_POINT = '/media/mahdif/RPI-RP2/' # TODO: hardcoded
-BUILD_DIR = './build' # TODO: hardcoded
 BIN_NAME = 'demo.uf2'
 # serial port
-SERIAL_PORT_NAME = '/dev/ttyACM0'
 SERIAL_PORT_BAUDRATE = 115200
 # commmunication
-INTERVAL_COUNT = 1
+INTERVAL_COUNT = 4
 INTERVAL_SEC = 6
 TIMEOUT_SEC = 0.5
 STAT_SIZE = 4000
 # connection
 CONNECTION_DELAY = 2
-# pipeline
-BUILD_UF2 = os.path.join(BUILD_DIR, BIN_NAME)
-JOB_COUNT = os.cpu_count()
-BUILD_COMMAND = 'cmake --build {} --parallel {}'.format(BUILD_DIR,JOB_COUNT)
 # analysis
 SCHD_NONSTOP = -1
 SCHD_APERIODIC = -2
@@ -102,24 +96,34 @@ def error(mesg:str):
     print('analysis.py: ERROR: {}'.format(mesg))
     exit(1)
 
+def args() -> tuple:
+    argv = sys.argv
+    if len(argv) < 4:
+        exit(1)
+    return(argv[1],argv[2],argv[3])
+
 def checkRoot():    
     if os.geteuid() != 0:
         error('root privilege required')
 
-def projectBuild():
-    assert(os.system(BUILD_COMMAND) == 0)
+def projectBuild(buildDir):
+    buildCommand = 'cmake --build {} --parallel {}'.format(buildDir,os.cpu_count())
+    assert(os.system(buildCommand) == 0)
     log('project built')
 
-def projectLoad():
-    shutil.copyfile(BUILD_UF2,os.path.join(PICO_MOUNT_POINT, BIN_NAME))
+def projectLoad(buildDir,mountDir):
+    shutil.copyfile(
+        os.path.join(buildDir,BIN_NAME),
+        os.path.join(mountDir, BIN_NAME)
+    )
     log('project loaded')
 
-def connectSerialPort() -> serial.Serial:
+def connectSerialPort(serialPort) -> serial.Serial:
     log('waiting for connection setup')
     time.sleep(CONNECTION_DELAY)
     try:
         serialConnection = serial.Serial(
-            port=SERIAL_PORT_NAME,
+            port=serialPort,
             baudrate=SERIAL_PORT_BAUDRATE
         )
         serialConnection.timeout = TIMEOUT_SEC
@@ -182,19 +186,23 @@ def analysisUtilization(stats:list) -> list:
         sum += execTime/period
     return sum * 100
 
-checkRoot()
-projectBuild()
-projectLoad()
-con = connectSerialPort()
-stats = readInput(con)
-stats = parseInput(stats)
+def main():
+    (buildDir, mountDir, serialPort) = args()
+    checkRoot()
+    projectBuild(buildDir)
+    projectLoad(buildDir,mountDir)
+    con = connectSerialPort(serialPort)
+    stats = readInput(con)
+    stats = parseInput(stats)
 
-print('\nRuntime Stats:')
-showRuntimeStats(stats)
+    print('\nRuntime Stats:')
+    showRuntimeStats(stats)
 
-stats = analysisParameters(stats)
-print('\nScheduling Result:')
-showSchdAnalysis(stats)
+    stats = analysisParameters(stats)
+    print('\nScheduling Result:')
+    showSchdAnalysis(stats)
 
-util = analysisUtilization(stats)
-print('\nCPU Utilization: {}%'.format(util))
+    util = analysisUtilization(stats)
+    print('\nCPU Utilization: {}%'.format(util))
+
+main()
